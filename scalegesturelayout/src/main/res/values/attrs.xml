@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ScaleGestureLayout">
+        <attr name="android:enabled" format="boolean" />
+        <attr name="fitTargetSize" format="boolean" />
+        <attr name="minZoom" format="float" />
+        <attr name="maxZoom" format="float" />
+    </declare-styleable>
+</resources>
