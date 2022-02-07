@@ -37,15 +37,30 @@ You can customize the ScaleGestureLayout using the properties:
         app:minZoom="0.1" 
 ```
 
-Set scale factor programmatically:
+Set scale factor programmatically and hang a scale event listener:
 ```kotlin
-    class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val sl = findViewById<ScaleGestureLayout>(R.id.scaleLayout)
+        // set scale factor
         sl.scaleFactor = 2f
+        // listen to zoom event
+        sl.setOnScaleGestureListener(object : ScaleGestureDetector.OnScaleGestureListener {
+            override fun onScale(detector: ScaleGestureDetector?): Boolean {
+                TODO("Not yet implemented")
+            }
+
+            override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+                TODO("Not yet implemented")
+            }
+
+            override fun onScaleEnd(detector: ScaleGestureDetector?) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 }
 ```
