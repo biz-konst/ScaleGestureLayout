@@ -37,6 +37,19 @@ You can customize the ScaleGestureLayout using the properties:
         app:minZoom="0.1" 
 ```
 
+Set scale factor programmatically:
+```kotlin
+    class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val sl = findViewById<ScaleGestureLayout>(R.id.scaleLayout)
+        sl.scaleFactor = 2f
+    }
+}
+```
+
 Take a look at the [sample project](sample) for more information.
 
 ### License 
