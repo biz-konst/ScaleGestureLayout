@@ -27,7 +27,7 @@ Add a ScaleGestureLayout view with a child (only one) to the activity's layout:
 </RelativeLayout>
 ```
 
-You can customize ScaleGestureLayout with properties:
+You can customize the ScaleGestureLayout using the properties:
 ```xml
         <-- If true, the size of the child element is adjusted to the size of the layout, taking into account the scaling factor -->
         app:fitTargetSize="true"
