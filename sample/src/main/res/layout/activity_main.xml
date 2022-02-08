@@ -11,8 +11,9 @@
         android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:background="@color/design_default_color_secondary"
-        android:padding="0dp"
+        android:padding="2dp"
         app:fitTargetSize="true"
+        app:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,9 +22,9 @@
         app:minZoom="0.01">
 
         <TextView
+            android:id="@+id/helloWorld"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:background="#9C27B0"
             android:text="Hello World!" />
 
@@ -41,4 +42,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="0.00%" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,8 +3,11 @@ package bk.scalegesturelayout
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.Gravity
 import android.view.ScaleGestureDetector
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import java.lang.String.format
 import java.util.*

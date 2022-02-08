@@ -7,10 +7,13 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.*
 import android.widget.FrameLayout
 import androidx.core.view.children
+import kotlin.math.ceil
 import kotlin.math.roundToInt
+import kotlin.math.truncate
 
 /**
  * @author Bizyur Konstantin <bkonst2180@gmail.com>
@@ -19,7 +22,7 @@ import kotlin.math.roundToInt
  * Layout class with gesture zoom support.
  * The first visible child element will be scaled according to the scaleFactor attribute.
  * You can add one child element to the layout and control its position by assigning
- * gravity with the android:layout_gravity attribute.
+ * gravity with the app:gravity attribute.
  */
 open class ScaleGestureLayout @JvmOverloads constructor(
     context: Context,
@@ -29,30 +32,10 @@ open class ScaleGestureLayout @JvmOverloads constructor(
 ) : ViewGroup(context, attrs, defStyleAttr, defStyleRes) {
 
     companion object {
-        const val DEFAULT_TARGET_GRAVITY = Gravity.LEFT and Gravity.TOP
+        const val DEFAULT_TARGET_GRAVITY = Gravity.START and Gravity.TOP
         const val DEFAULT_MIN_ZOOM = 0.5f
         const val DEFAULT_MAX_ZOOM = 2f
     }
-
-    var scaleFactor = 1f
-        private set(value) {
-            check(factorIsValid(value)) { "Scale factor is invalid" }
-            val newValue = value.coerceIn(minZoom, maxZoom)
-            if (field == newValue) {
-                return
-            }
-            field = newValue
-            applyScaleFactor()
-        }
-
-    /**
-     * Flag to fit the target size to the given scaling factor to properly fill the layout
-     */
-    var fitTargetSize = true
-        set(value) {
-            field = value
-            invalidate()
-        }
 
     /**
      * Minimum allowable scaling factor
@@ -74,6 +57,49 @@ open class ScaleGestureLayout @JvmOverloads constructor(
             scaleFactor = scaleFactor.coerceAtMost(value)
         }
 
+    var scaleFactor = 1f
+        set(value) {
+            check(factorIsValid(value)) { "Scale factor is invalid" }
+
+            val newValue = value.coerceIn(minZoom, maxZoom)
+            if (field == newValue) {
+                return
+            }
+
+            field = newValue
+            applyScaleFactor()
+        }
+
+    /**
+     * Flag to fit the target size to the given scaling factor to properly fill the layout
+     */
+    var fitTargetSize = true
+        set(value) {
+            field = value
+            if (childCount > 0) {
+                invalidate()
+            }
+        }
+
+    var gravity = DEFAULT_TARGET_GRAVITY
+        set(value) {
+            var newValue = value
+            if (newValue and Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK == 0) {
+                newValue = newValue or Gravity.START
+            }
+            if (newValue and Gravity.VERTICAL_GRAVITY_MASK == 0) {
+                newValue = newValue or Gravity.TOP
+            }
+            if (field == newValue) {
+                return
+            }
+
+            field = newValue
+            if (childCount > 0) {
+                invalidate()
+            }
+        }
+
     init {
         val a = context.obtainStyledAttributes(
             attrs, R.styleable.ScaleGestureLayout, defStyleAttr, defStyleRes
@@ -82,6 +108,7 @@ open class ScaleGestureLayout @JvmOverloads constructor(
         fitTargetSize = a.getBoolean(R.styleable.ScaleGestureLayout_fitTargetSize, true)
         minZoom = a.getFloat(R.styleable.ScaleGestureLayout_minZoom, DEFAULT_MIN_ZOOM)
         maxZoom = a.getFloat(R.styleable.ScaleGestureLayout_maxZoom, DEFAULT_MAX_ZOOM)
+        gravity = a.getInt(R.styleable.ScaleGestureLayout_gravity, DEFAULT_TARGET_GRAVITY)
         a.recycle()
     }
 
@@ -139,30 +166,21 @@ open class ScaleGestureLayout @JvmOverloads constructor(
             val scaledWidth = (childWidth * child.scaleX).roundToInt()
             val scaledHeight = (childHeight * child.scaleY).roundToInt()
 
-            val lp = child.layoutParams as FrameLayout.LayoutParams
-
-            var gravity = lp.gravity
-            if (gravity == -1) {
-                gravity = DEFAULT_TARGET_GRAVITY
-            }
-
             val absGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection)
             val childLeft = when (absGravity and Gravity.HORIZONTAL_GRAVITY_MASK) {
                 Gravity.CENTER_HORIZONTAL ->
-                    paddingLeft + (right - left - paddingLeft + paddingRight - scaledWidth) / 2 +
-                            lp.leftMargin - lp.rightMargin
+                    paddingLeft + (right - left - paddingLeft - paddingRight - scaledWidth) / 2
                 Gravity.RIGHT ->
-                    right - left - paddingRight - scaledWidth - lp.rightMargin
-                else -> paddingLeft + lp.leftMargin
+                    right - left - paddingRight - scaledWidth
+                else -> paddingLeft
             }
 
             val childTop = when (gravity and Gravity.VERTICAL_GRAVITY_MASK) {
                 Gravity.CENTER_VERTICAL ->
-                    paddingTop + (bottom - top - paddingTop + paddingBottom - scaledHeight) / 2 +
-                            lp.topMargin - lp.bottomMargin
+                    paddingTop + (bottom - top - paddingTop - paddingBottom - scaledHeight) / 2
                 Gravity.BOTTOM ->
-                    bottom - top - paddingBottom - scaledHeight - lp.bottomMargin
-                else -> paddingTop + lp.topMargin
+                    bottom - top - paddingBottom - scaledHeight
+                else -> paddingTop
             }
 
             child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight)
@@ -176,11 +194,10 @@ open class ScaleGestureLayout @JvmOverloads constructor(
 
         target ?: ensureTarget()
         target?.let { child ->
-            val lp = child.layoutParams as FrameLayout.LayoutParams
+            val hPadding = paddingLeft + paddingRight
+            val vPadding = paddingTop + paddingBottom
 
-            val hPadding = paddingLeft + paddingRight + lp.leftMargin + lp.rightMargin
-            val vPadding = paddingTop + paddingBottom + lp.topMargin + lp.bottomMargin
-
+            val lp = child.layoutParams
             child.measure(
                 getChildMeasureSpec2(widthMeasureSpec, hPadding, lp.width, child.scaleX),
                 getChildMeasureSpec2(heightMeasureSpec, vPadding, lp.height, child.scaleY)
@@ -220,23 +237,7 @@ open class ScaleGestureLayout @JvmOverloads constructor(
         return scaleGestureDetector.onTouchEvent(event)
     }
 
-    override fun checkLayoutParams(p: LayoutParams): Boolean {
-        return p is FrameLayout.LayoutParams
-    }
-
-    override fun generateDefaultLayoutParams(): LayoutParams {
-        return FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    }
-
     override fun shouldDelayChildPressedState() = true
-
-    override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
-        return FrameLayout.LayoutParams(context, attrs)
-    }
-
-    override fun generateLayoutParams(p: LayoutParams): LayoutParams {
-        return FrameLayout.LayoutParams(p)
-    }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state !is ScaleSavedState) {
@@ -247,16 +248,17 @@ open class ScaleGestureLayout @JvmOverloads constructor(
         fitTargetSize = state.fitTargetSize
         maxZoom = state.maxZoom
         minZoom = state.minZoom
-        target ?: ensureTarget()
+        gravity = state.gravity
         scaleFactor = state.scaleFactor
     }
 
     override fun onSaveInstanceState(): Parcelable {
         return ScaleSavedState(super.onSaveInstanceState()).also {
             it.fitTargetSize = fitTargetSize
-            it.scaleFactor = scaleFactor
             it.minZoom = minZoom
             it.maxZoom = maxZoom
+            it.gravity = gravity
+            it.scaleFactor = scaleFactor
         }
     }
 
@@ -382,26 +384,29 @@ open class ScaleGestureLayout @JvmOverloads constructor(
     private class ScaleSavedState(superState: Parcelable?) : AbsSavedState(superState) {
 
         var fitTargetSize = true
-        var scaleFactor = 1f
         var minZoom = DEFAULT_MIN_ZOOM
         var maxZoom = DEFAULT_MAX_ZOOM
+        var gravity = DEFAULT_TARGET_GRAVITY
+        var scaleFactor = 1f
 
         constructor(source: Parcel, loader: ClassLoader? = null) : this(
             source.readParcelable<Parcelable>(loader) ?: EMPTY_STATE
         ) {
             fitTargetSize = source.readInt() != 0
-            scaleFactor = source.readFloat()
             minZoom = source.readFloat()
             maxZoom = source.readFloat()
+            gravity = source.readInt()
+            scaleFactor = source.readFloat()
         }
 
         override fun writeToParcel(dest: Parcel?, flags: Int) {
             dest?.apply {
                 writeParcelable(superState, flags)
                 writeInt(if (fitTargetSize) 1 else 0)
-                writeFloat(scaleFactor)
                 writeFloat(minZoom)
                 writeFloat(maxZoom)
+                writeInt(gravity)
+                writeFloat(scaleFactor)
             }
         }
 
