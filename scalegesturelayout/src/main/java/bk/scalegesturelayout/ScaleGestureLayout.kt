@@ -7,13 +7,9 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
-import android.widget.FrameLayout
 import androidx.core.view.children
-import kotlin.math.ceil
 import kotlin.math.roundToInt
-import kotlin.math.truncate
 
 /**
  * @author Bizyur Konstantin <bkonst2180@gmail.com>
