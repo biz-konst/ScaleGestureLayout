@@ -1,4 +1,4 @@
-package bk.scalegesturelayout
+package app.scalegesturelayout
 
 import org.junit.Test
 

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <bk.scalegesturelayout.ScaleGestureLayout
+    <app.scalegesturelayout.ScaleGestureLayout
         android:id="@+id/scaleLayout"
         android:layout_width="wrap_content"
         android:layout_height="200dp"
@@ -28,7 +28,7 @@
             android:background="#9C27B0"
             android:text="Hello World!" />
 
-    </bk.scalegesturelayout.ScaleGestureLayout>
+    </app.scalegesturelayout.ScaleGestureLayout>
 
     <TextView
         android:id="@+id/scaleFactor"
