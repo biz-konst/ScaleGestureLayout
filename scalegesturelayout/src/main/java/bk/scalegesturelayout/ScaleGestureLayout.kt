@@ -300,7 +300,7 @@ open class ScaleGestureLayout @JvmOverloads constructor(
             target = null
         }
         if (target == null && childCount > 0) {
-            target = children.first { it.visibility != GONE }
+            target = children.firstOrNull { it.visibility != GONE }
         }
     }
 

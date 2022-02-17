@@ -3,6 +3,9 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+group = 'com.github.biz-konst'
+version = '1.0'
+
 android {
     compileSdk 31
 
@@ -15,7 +18,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -31,6 +34,6 @@ android {
 dependencies {
 
     //noinspection GradleDynamicVersion
-    implementation 'androidx.core:core-ktx:1+'
+    implementation 'androidx.core:core-ktx:latest.release'
 
 }
