@@ -377,7 +377,8 @@ open class ScaleGestureLayout @JvmOverloads constructor(
      *
      * @params superState the state of the superclass of this view
      */
-    private class ScaleSavedState(superState: Parcelable?) : AbsSavedState(superState) {
+    private class ScaleSavedState(superState: Parcelable?) :
+        AbsSavedState(superState ?: EMPTY_STATE) {
 
         var fitTargetSize = true
         var minZoom = DEFAULT_MIN_ZOOM
@@ -385,8 +386,9 @@ open class ScaleGestureLayout @JvmOverloads constructor(
         var gravity = DEFAULT_TARGET_GRAVITY
         var scaleFactor = 1f
 
+        @JvmOverloads
         constructor(source: Parcel, loader: ClassLoader? = null) : this(
-            source.readParcelable<Parcelable>(loader) ?: EMPTY_STATE
+            source.readParcelable<Parcelable>(loader)
         ) {
             fitTargetSize = source.readInt() != 0
             minZoom = source.readFloat()
@@ -406,10 +408,14 @@ open class ScaleGestureLayout @JvmOverloads constructor(
             }
         }
 
-        companion object CREATOR : Parcelable.Creator<ScaleSavedState> {
+        companion object CREATOR : Parcelable.ClassLoaderCreator<ScaleSavedState> {
+            override fun createFromParcel(source: Parcel, loader: ClassLoader?): ScaleSavedState =
+                createFromParcel(source)
+
             override fun createFromParcel(parcel: Parcel) = ScaleSavedState(parcel)
 
             override fun newArray(size: Int) = arrayOfNulls<ScaleSavedState?>(size)
+
         }
     }
 
